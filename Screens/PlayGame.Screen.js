@@ -10,7 +10,7 @@ import { userStore } from '../store/user';
 const {height, width} = Dimensions.get("window");
 
 const initState = {
-  timeLeft: 2,
+  timeLeft: 12,
   size: 2,
 };
 
