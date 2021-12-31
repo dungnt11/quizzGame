@@ -5,6 +5,7 @@ import ModalNative from "react-native-modal";
 import {Audio} from 'expo-av';
 import {generateRGB, mutateRGB} from "../utils/color";
 import {Header} from "../Components/Header";
+import { userStore } from '../store/user';
 
 const {height, width} = Dimensions.get("window");
 
@@ -84,18 +85,18 @@ class PlayScreen extends Component {
   }
 
   componentWillUnmount() {
-    this.exitDisplay();
+    this.exitDisplay(true);
   }
 
-  exitDisplay() {
+  async exitDisplay(isClear) {
     clearInterval(this.interval);
-    this.state.soundBackground.pauseAsync();
-    this.state.soundTap.pauseAsync();
-    this.state.soundTapWrong.pauseAsync();
-    this.state.soundTapWhenPause.pauseAsync();
-    this.state.soundPause.pauseAsync();
-    this.state.soundResume.pauseAsync();
-    this.state.soundGameOver.pauseAsync();
+    await this.state.soundBackground.pauseAsync();
+    await this.state.soundTap.pauseAsync();
+    await this.state.soundTapWrong.pauseAsync();
+    await this.state.soundTapWhenPause.pauseAsync();
+    await this.state.soundPause.pauseAsync();
+    await this.state.soundResume.pauseAsync();
+    await this.state.soundGameOver.pauseAsync();
     this.setState({
       points: 0,
       timeLeft: initState.timeLeft, // init 12s
@@ -113,6 +114,16 @@ class PlayScreen extends Component {
       // Modal
       isLose: false,
     });
+
+    if (isClear) {
+      await this.state.soundBackground.unloadAsync();
+      await this.state.soundTap.unloadAsync();
+      await this.state.soundTapWrong.unloadAsync();
+      await this.state.soundTapWhenPause.unloadAsync();
+      await this.state.soundPause.unloadAsync();
+      await this.state.soundResume.unloadAsync();
+      await this.state.soundGameOver.unloadAsync();
+    }
   }
 
   generateSizeIndex = () => {
@@ -144,7 +155,7 @@ class PlayScreen extends Component {
       await soundTap.replayAsync();
     } else {
       // wrong tile
-      this.setState({timeLeft: timeLeft - 1});
+      this.setState({timeLeft: timeLeft - 1 >=0 ? timeLeft - 1 : 0});
       await soundTapWrong.replayAsync();
     }
   }
@@ -170,6 +181,7 @@ class PlayScreen extends Component {
       if (this.state.timeLeft - 1 <= 0) {
         this.state.soundGameOver.replayAsync();
         this.setState({isLose: true, timeLeft: 0});
+        userStore.setScore(this.state.points);
         clearInterval(this.interval);
       } else {
         this.setState({timeLeft: this.state.timeLeft - 1});
@@ -184,7 +196,7 @@ class PlayScreen extends Component {
 
   goHome() {
     this.props.navigation.push('Home');
-    this.exitDisplay();
+    this.exitDisplay(false);
   }
 
   render() {
@@ -249,7 +261,7 @@ class PlayScreen extends Component {
                 source={require('../assets/icons/trophy.png')}
               />
               <TextWithFontFamily fontSize={15} marginTop={0} style={{marginLeft: 5}}>
-                120
+                {userStore.getUser.scoreMax}
               </TextWithFontFamily>
             </FlexVertical>
           </FlexCenter>
@@ -267,15 +279,6 @@ class PlayScreen extends Component {
             <TextWithFontFamily fontSize={20} marginTop={10}>
               Time left
             </TextWithFontFamily>
-            <FlexVertical marginTop={15}>
-              <ImageSmall
-                source={require('../assets/icons/clock.png')}
-              />
-
-              <TextWithFontFamily fontSize={15} marginTop={0} style={{marginLeft: 5}}>
-                120s
-              </TextWithFontFamily>
-            </FlexVertical>
           </FlexCenter>
         </Footer>
 

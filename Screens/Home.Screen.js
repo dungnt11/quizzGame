@@ -1,17 +1,17 @@
 import * as React from "react";
 import {Image, TouchableOpacity} from "react-native";
-import styled from 'styled-components/native';
-
-import {Header} from "../Components/Header";
 import {Audio} from "expo-av";
+import styled from 'styled-components/native';
+import { userStore } from '../store/user';
+import {Header} from "../Components/Header";
 
 function HomeScreen({navigation}) {
   const [soundActive, setSoundActive] = React.useState(true);
   const [soundBackground, setSoundBackground] = React.useState();
-  
+
   async function playNow() {
     navigation.push('Play');
-    await soundBackground.sound.unloadAsync();
+    await soundBackground.sound.pauseAsync();
   }
 
   const imageSource = soundActive
@@ -38,6 +38,10 @@ function HomeScreen({navigation}) {
       await soundBackground.sound.setIsLoopingAsync(true);
       await soundBackground.sound.playAsync();
     })();
+
+    return async () => {
+      await soundBackground.sound.unloadAsync();
+    }
   }, []);
 
   return (
@@ -59,14 +63,14 @@ function HomeScreen({navigation}) {
         <ImageTrophy
           source={require("../assets/icons/trophy.png")}
         />
-        <TextTrophy>Hi-score: 0</TextTrophy>
+        <TextTrophy>Hi-score: {userStore.getUser.scoreMax}</TextTrophy>
       </WrapperFlex>
 
       <WrapperFlex>
         <ImageTrophy
-          source={require("../assets/icons/leaderboard.png")}
+          source={require("../assets/icons/clock.png")}
         />
-        <TextTrophy>Leoderboard</TextTrophy>
+        <TextTrophy>Time-Score: {Math.floor(userStore.getUser.scoreMax * 1.5)}s</TextTrophy>
       </WrapperFlex>
 
       <TeamCoder>
