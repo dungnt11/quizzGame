@@ -150,7 +150,7 @@ class PlayScreen extends Component {
     }
     if (rowIndex === diffTileIndex[0] && columnIndex === diffTileIndex[1]) {
       // good tile
-      this.setState({points: points + 1, timeLeft: timeLeft + 3});
+      this.setState({points: points + 1, timeLeft: timeLeft + 3 <= initState.timeLeft ? timeLeft + 3 : initState.timeLeft});
       this.generateNewRound();
       await soundTap.replayAsync();
     } else {
@@ -213,7 +213,12 @@ class PlayScreen extends Component {
     const imagePause = !isPause ? require('../assets/icons/pause.png') : require('../assets/icons/play.png');
     return (
       <Container>
-        <Header fontSize={70}/>
+        <TouchableOpacity
+          onPress={this.goHome.bind(this)}
+          style={{marginLeft: 0}}
+        >
+          <Header fontSize={70}/>
+        </TouchableOpacity>
         <View
           style={{
             height: height / 2.5,
